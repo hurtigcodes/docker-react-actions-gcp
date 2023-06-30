@@ -1,0 +1,70 @@
+
+
+# Old method
+# name: Deploy to GAE
+
+# on:
+#   push:
+#     branches:
+#       - main
+  
+#   # Allows you to run this workflow manually from the Actions tab
+#   workflow_dispatch:
+
+# jobs:
+#   deploy:
+#     name: Deploying to Google Cloud
+#     runs-on: ubuntu-latest
+    
+#     steps:
+#     - name: Checkout
+#       uses: actions/checkout@v2
+
+
+#     - name: Deploy to App Engine
+#       id: deploy
+#       uses: google-github-actions/deploy-appengine@v1.2.7
+#       with:
+#         deliverables: app.yaml cron.yaml
+#         version: v1
+#         project_id: ${{ secrets.GCP_PROJECT }}
+#         credentials: ${{ secrets.GCP_CREDENTIALS }}
+
+#     - name: Test
+#       run: curl "${{ steps.deploy.outputs.url }}"
+
+
+## 
+
+
+name: Deploy to GAE
+
+on:
+  push:
+    branches:
+      - main
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  job_id:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        # workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+        workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+    - id: 'deploy'
+      uses: 'google-github-actions/deploy-appengine@v1.2.7'
+
+
+    # Example of using the output
+    - id: 'test'
+      run: 'curl "${{ steps.deploy.outputs.url }}"'
